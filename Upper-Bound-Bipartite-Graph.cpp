@@ -5,12 +5,9 @@
 using namespace std;
 
 const int N = 3;
-// N = 5 时 25 条边 
 // 0: unknown
 // 1: null edge
 // 2: real edge
-// const int E = 25;
-// const int U = 14400; // (5!)^2
 
 int cnt = 0;
 ll edge[N * N];
@@ -19,18 +16,18 @@ int adj[N * N * N * N];
 struct ListNode {
     ll val;
     ListNode *next;
-    ListNode() : val(-1), next(nullptr) {}  // 默认值为-1
-    ListNode(int x) : val(x), next(nullptr) {}  // 按值 x 初始化
-    ListNode(int x, ListNode *next) : val(x), next(next) {}  // 使用新的节点初始化
+    ListNode() : val(-1), next(nullptr) {}  // default: -1
+    ListNode(int x) : val(x), next(nullptr) {} 
+    ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
 struct ListHash {
     ll graph;
     double val;
     ListHash *next;
-    ListHash() : graph(-1), next(nullptr) {}  // 默认值为-1
-    ListHash(int x) : graph(x), next(nullptr) {}  // 按值 x 初始化
-    ListHash(int x, ListHash *next) : graph(x), next(next) {}  // 使用新的节点初始化
+    ListHash() : graph(-1), next(nullptr) {}  // default: -1
+    ListHash(int x) : graph(x), next(nullptr) {} 
+    ListHash(int x, ListHash *next) : graph(x), next(next) {} 
 };
 
 unordered_map<ll, ListHash*> dp;
@@ -130,20 +127,6 @@ namespace Isomorph {
             } while(next_permutation(L, L + N));
         } while(next_permutation(R, R + N));
 
-        // print_graph(graph_a);
-        // for (int i = 0; i < N; ++i) cout << vi_a[i] << ' ';
-        // cout << endl;
-        // for (int i = 0; i < N; ++i) cout << vj_a[i] << ' ';
-        // cout << endl;
-        // cout << endl;
-
-        // print_graph(graph_b);
-        // for (int i = 0; i < N; ++i) cout << vi_b[i] << ' ';
-        // cout << endl;
-        // for (int i = 0; i < N; ++i) cout << vj_b[i] << ' ';
-        // cout << endl;
-        // cout << endl;
-
         return false;
     }
 }
@@ -161,12 +144,11 @@ int compute_list_length(ListNode* head)
 
 bool valid_query(ll graph, int i)
 {
-    // 如果 edge_i 已经 query 过，则不能再问
+    // If edge_i has been queried
     if ((graph / edge[i]) % 3 != 0) return false;
     for (int j = 0; j < 2 * (N - 1); ++j) {
-        // 检查 edge_i 所有邻接边
+        // check all edges sharing common point with edge_i
         int e = adj[i * 2 * (N - 1) + j];
-        // 如果邻边存在且被问到了
         if ((graph / edge[e]) % 3 == 2) return false;
     }
     return true;
@@ -207,11 +189,9 @@ double dfs(ll graph, ListNode* pre_head)
             p = p->next;
         }
     }
-    // ++cnt;
-    // if (cnt % 1000000 == 0) cout <<  cnt / 1000000 << endl;
 
     double universal_size = (double)1.0 * compute_list_length(pre_head);
-    // 枚举当前选哪条边, sum 记录当前状态收益
+    //Enumerate chosen edges, sum records the expected rewards
     double sum = 0.;
     for (int i = 0; i < N * N; ++i) {
         // 检查是否可以 query edge_i
@@ -239,7 +219,6 @@ double dfs(ll graph, ListNode* pre_head)
         if (p_i_null > 0) cur_sum += p_i_null * dfs(status_i_null, head_null);
         sum = max(sum, cur_sum);
     }
-    // if (sum != 0) dp[cur] = sum;
     if (dp.find(cur) != dp.end()) {
         ListHash* p = dp[cur];
         while (p->next != nullptr) p = p->next;
@@ -257,20 +236,20 @@ double dfs(ll graph, ListNode* pre_head)
 
 ListNode* preprocess()
 {
-    // 计算 edge_i 的位数
+    // Label edges, use a ternary number to represent a graph
     ll cur = 1;
     for (int i = 0; i < N * N; ++i) {
         edge[i] = cur;
         cur *= 3;
     }
-    // 计算 edge_i 的邻接边
+    // compute edges sharing a common point with edge_i
     for (int i = 0; i < N * N; ++i) {
         for (int j = 0; j < (N - 1); ++j) {
             adj[i * 2 * (N - 1) + j] = (i % N + (j + 1)) % N + i / N * N;
             adj[i * 2 * (N - 1) + (N - 1) + j] = (i / N + (j + 1)) % N * N + i % N;
         }
     }
-    // 保存所有的上三角矩阵
+    // Compute all possible upper-triangle matrices
     ListNode *head = new ListNode;
     ListNode *tail = head;
     int L[N], R[N], cnt = 0;
@@ -286,17 +265,14 @@ ListNode* preprocess()
                     cur += ((L[i] + R[j]) >= N - 1)? 2 * edge[i * N + j]: edge[i * N + j];
                 }
             }
-            // 挂链表
+            // linked list
             ListNode *node = new ListNode;
             tail->val = cur;
             tail->next = node;
             tail = node;
-            // cnt += 1;
-            // cout << cnt << ':' << cur << endl;
         } while (next_permutation(L, L + N));
     } while (next_permutation(R, R + N));
 
-    // print_upper_triangle_graph(cnt);
     return head;
 }
 
