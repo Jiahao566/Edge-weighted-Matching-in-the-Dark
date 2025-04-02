@@ -223,15 +223,7 @@ double dfs(ll graph, ListNode* pre_head)
         double null_size = (double)1.0 * compute_list_length(head_null);
         double p_i_exists = exists_size / universal_size;
         double p_i_null = null_size / universal_size;
-        // debug
-        if (p_i_exists + p_i_null < 0.999) {
-            cout << cur << endl;
-            cout << graph << endl;
-            cout << p_i_exists << endl;
-            cout << p_i_null << endl;
-            cout << "error!!!" << endl;
-            return 0;
-        }
+        
         double cur_sum = 0;
         if (p_i_exists > 0) cur_sum += p_i_exists * (dfs(status_i_exists, head_exists) + 1);
         if (p_i_null > 0) cur_sum += p_i_null * dfs(status_i_null, head_null);
