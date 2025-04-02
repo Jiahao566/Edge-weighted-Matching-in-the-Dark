@@ -17,8 +17,6 @@ struct ListNode {
     ll val;
     ListNode *next;
     ListNode() : val(-1), next(nullptr) {}  // default: -1
-    ListNode(int x) : val(x), next(nullptr) {} 
-    ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
 struct ListHash {
@@ -26,8 +24,6 @@ struct ListHash {
     double val;
     ListHash *next;
     ListHash() : graph(-1), next(nullptr) {}  // default: -1
-    ListHash(int x) : graph(x), next(nullptr) {} 
-    ListHash(int x, ListHash *next) : graph(x), next(next) {} 
 };
 
 unordered_map<ll, ListHash*> dp;
@@ -282,9 +278,9 @@ int main()
     start = clock();
     ListNode *head = preprocess();
     double Ans = dfs(0, head);
-    cout << Ans / N << endl;
-    cout << dp.size() << endl;
+    cout << "Ratio: " << Ans / N << endl;
+    cout << "Number of DP states: " << dp.size() << endl;
     end = clock();
-    cout<<(double)(end-start)/CLOCKS_PER_SEC;
+    cout<< "Running time: " << (double)(end-start)/CLOCKS_PER_SEC;
     return 0;
 }
