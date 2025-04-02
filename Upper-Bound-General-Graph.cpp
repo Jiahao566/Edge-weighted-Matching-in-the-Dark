@@ -4,19 +4,19 @@
 
 using namespace std;
 
-const int N = 3;
+const int N = 4;
 // 0: unknown
 // 1: null edge
 // 2: real edge
 
-int cnt = 0;
-ll edge[N * N];
-int adj[N * N * N * N];
+ll edge[(2 * N - 1) * N];
+int adj[(2 * N - 1) * N * 2 * (2 * N - 2)];
 
 struct ListNode {
     ll val;
     ListNode *next;
     ListNode() : val(-1), next(nullptr) {}  // default: -1
+    ListNode(int x) : val(x), next(nullptr) {}  
 };
 
 struct ListHash {
@@ -24,6 +24,7 @@ struct ListHash {
     double val;
     ListHash *next;
     ListHash() : graph(-1), next(nullptr) {}  // default: -1
+    ListHash(int x) : graph(x), next(nullptr) {}  
 };
 
 unordered_map<ll, ListHash*> dp;
@@ -39,6 +40,26 @@ void print_graph(ll graph)
     }
 }
 
+ll edge_label(int i, int j)
+{
+    if (i > j) swap(i, j);
+    return (4 * N - 1 - i) * i / 2 + j - i - 1;
+}
+
+int left_vertex_label(ll e)
+{
+    for (int i = 0; i < 2 * N - 1; ++i)
+    for (int j = i + 1; j < 2 * N; ++j)
+        if (edge_label(i, j) == e) return i;
+}
+
+int right_vertex_label(ll e)
+{
+    for (int i = 0; i < 2 * N - 1; ++i)
+    for (int j = i + 1; j < 2 * N; ++j)
+        if (edge_label(i, j) == e) return j;
+}
+
 namespace Isomorph {	
 	ll value(int type, ll val) {
 		if (type == 0)
@@ -51,77 +72,78 @@ namespace Isomorph {
 	}
     void _hash_points(ll graph, ll vi[], ll vj[])
     {   
-        ll ui[N], uj[N];
+        ll ui[2 * N], uj[2 * N];
 		for (int iter = 1; iter <= 2 * N; iter ++) {
-			for (int i = 0; i < N; i ++) {
+			for (int i = 0; i < 2 * N; i ++) {
 				ui[i] = 9999;
-				for (int j = 0; j < N; j ++) {
-                    int e = i * N + j;
+				for (int j = 0; j < 2 * N; j ++) {
+                    if (i == j) continue;
+                    int e = edge_label(i, j);
                     int a = (graph / edge[e]) % 3;
 					ui[i] += value(a, vj[j]);
                 }
 			}
-			for (int j = 0; j < N; j ++) {
+			for (int j = 0; j < 2 * N; j ++) {
 				uj[j] = 471231;
-				for (int i = 0; i < N; i ++) {
-                    int e = i * N + j;
+				for (int i = 0; i < 2 * N; i ++) {
+                    if (i == j) continue;
+                    int e = edge_label(i, j);
                     int a = (graph / edge[e]) % 3;
 					uj[j] += value(a, vi[i]);
                 }
 			}
-			for (int i = 0; i < N; i ++)
+			for (int i = 0; i < 2 * N; i ++)
 				vi[i] = ui[i];
-			for (int j = 0; j < N; j ++)
+			for (int j = 0; j < 2 * N; j ++)
 				vj[j] = uj[j];
 		}
     }
 	ll hash(ll graph) {
-        ll vi[N], vj[N];
-        fill(vi, vi + N, 84986076);
-		fill(vj, vj + N, 12345678);
+        ll vi[2 * N], vj[2 * N];
+        fill(vi, vi + 2 * N, 84986076);
+		fill(vj, vj + 2 * N, 12345678);
         _hash_points(graph, vi, vj);
 		ll mul = 1;
-		for (int i = 0; i < N; i ++)
+		for (int i = 0; i < 2 * N; i ++)
 			mul *= vi[i];
-		for (int j = 0; j < N; j ++)
+		for (int j = 0; j < 2 * N; j ++)
 			mul *= vj[j];
-		for (int i = 0; i < N; i ++)
+		for (int i = 0; i < 2 * N; i ++)
 			mul += 2183 * vi[i] * vi[i];
-		for (int j = 0; j < N; j ++)
+		for (int j = 0; j < 2 * N; j ++)
 			mul += 5189 * vj[j] + 6;
 		return mul;
 	}
     bool check_isomorph(ll graph_a, ll graph_b)
     {
         int num = 0;
-        ll vi_a[N], vj_a[N], vi_b[N], vj_b[N];
-        fill(vi_a, vi_a + N, 84986076);
-        fill(vj_a, vj_a + N, 12345678);
-        fill(vi_b, vi_b + N, 84986076);
-		fill(vj_b, vj_b + N, 12345678);
+        ll vi_a[2 * N], vj_a[2 * N], vi_b[2 * N], vj_b[2 * N];
+        fill(vi_a, vi_a + 2 * N, 84986076);
+        fill(vj_a, vj_a + 2 * N, 12345678);
+        fill(vi_b, vi_b + 2 * N, 84986076);
+		fill(vj_b, vj_b + 2 * N, 12345678);
         _hash_points(graph_a, vi_a, vj_a);
         _hash_points(graph_b, vi_b, vj_b);
-        int L[N], R[N];
-        for (int i = 0; i < N; ++i) L[i] = R[i] = i;
+        int V[2 * N];
+        for (int i = 0; i < 2 * N; ++i) V[i] = i;
+        sort(vi_a, vi_a + 2 * N);
+        sort(vi_b, vi_b + 2 * N);
+        for (int i = 0; i < 2 * N; ++i) if (vi_a[i] != vi_b[i]) return false;
         do {
             bool flag = true;
-            for (int i = 0; i < N; ++i)
-                if (vj_a[R[i]] != vj_b[i]) { flag = false; break; } 
+            for (int i = 0; i < 2 * N; ++i)
+                if (vj_a[V[i]] != vj_b[i]) { flag = false; break; } 
             if (!flag) continue;
-            do {
-                flag = true;
-                for (int i = 0; i < N; ++i) if (vi_a[L[i]] != vi_b[i]) { flag = false; break; } 
-                if (!flag) continue;
-                for (int i = 0; i < N; ++i) {
-                    for (int j = 0; j < N; ++j) {
-                        int e_b = i * N + j;
-                        int e_a = L[i] * N + R[j];
-                        if ((graph_a / edge[e_a]) % 3 != (graph_b / edge[e_b]) % 3) { flag = false; break; } 
-                    }
+            for (int i = 0; i < 2 * N; ++i) {
+                for (int j = 0; j < 2 * N; ++j) {
+                    if (i == j) continue;
+                    int e_b = edge_label(i, j);
+                    int e_a = edge_label(V[i], V[j]);
+                    if ((graph_a / edge[e_a]) % 3 != (graph_b / edge[e_b]) % 3) { flag = false; break; } 
                 }
-                if (flag) return true;
-            } while(next_permutation(L, L + N));
-        } while(next_permutation(R, R + N));
+            }
+            if (flag) return true;
+        } while(next_permutation(V, V + 2 * N));
 
         return false;
     }
@@ -142,9 +164,9 @@ bool valid_query(ll graph, int i)
 {
     // If edge_i has been queried
     if ((graph / edge[i]) % 3 != 0) return false;
-    for (int j = 0; j < 2 * (N - 1); ++j) {
+    for (int j = 0; j < 2 * (2 * N - 2); ++j) {
         // check all edges sharing common point with edge_i
-        int e = adj[i * 2 * (N - 1) + j];
+        int e = adj[i * 2 * (2 * N - 2) + j];
         if ((graph / edge[e]) % 3 == 2) return false;
     }
     return true;
@@ -152,7 +174,7 @@ bool valid_query(ll graph, int i)
 
 bool check_valid(ll graph, ll cur)
 {
-    for (int i = 0; i < N * N; ++i) {
+    for (int i = 0; i < (2 * N - 1) * N; ++i) {
         if (cur % 3 != 0 && cur % 3 != graph % 3) return false;
         graph /= 3, cur /= 3;
     }
@@ -189,7 +211,7 @@ double dfs(ll graph, ListNode* pre_head)
     double universal_size = (double)1.0 * compute_list_length(pre_head);
     //Enumerate chosen edges, sum records the expected rewards
     double sum = 0.;
-    for (int i = 0; i < N * N; ++i) {
+    for (int i = 0; i < (2 * N - 1) * N; ++i) {
         // Check whethr querying edge_i is legal
         if (!valid_query(graph, i)) continue;
         ll status_i_exists = graph + 2 * edge[i];
@@ -234,40 +256,43 @@ ListNode* preprocess()
 {
     // Label edges, use a ternary number to represent a graph
     ll cur = 1;
-    for (int i = 0; i < N * N; ++i) {
+    for (int i = 0; i < (2 * N - 1) * N; ++i) {
         edge[i] = cur;
         cur *= 3;
     }
     // compute edges sharing a common point with edge_i
-    for (int i = 0; i < N * N; ++i) {
-        for (int j = 0; j < (N - 1); ++j) {
-            adj[i * 2 * (N - 1) + j] = (i % N + (j + 1)) % N + i / N * N;
-            adj[i * 2 * (N - 1) + (N - 1) + j] = (i / N + (j + 1)) % N * N + i % N;
+    for (int i = 0; i < (2 * N - 1) * N; ++i) {
+        int u = left_vertex_label(i), v = right_vertex_label(i);
+        // cout << i <<' ' << u << ' ' << v << endl;
+        int cnt_u = 0, cnt_v = 0; 
+        for (int j = 0; j < 2 * N - 1; ++j) {
+            int new_v = (u + 1 + j) % (2 * N), new_u = (v + 1 + j) % (2 * N);
+            if (new_v != u && new_v != v) adj[i * 2 * (2 * N - 2) + cnt_u++] = edge_label(u, new_v);
+            if (new_u != u && new_u != v) adj[i * 2 * (2 * N - 2) + (2 * N - 2) + cnt_v++] = edge_label(new_u, v);
         }
     }
-    // Compute all possible upper-triangle matrices
+
+    // Compute all possible hard-instnce matrices
     ListNode *head = new ListNode;
     ListNode *tail = head;
-    int L[N], R[N], cnt = 0;
-    for (int i = 0; i < N; ++i) {
-        L[i] = i;
-        R[i] = i; 
-    }
+    int degree[2 * N], cnt = 0;
+    for (int i = 0; i < 2 * N; ++i) degree[i] = i;
     do {
-        do {
-            cur = 0;
-            for (int i = 0; i < N; ++i) {
-                for (int j = 0; j < N; ++j) {
-                    cur += ((L[i] + R[j]) >= N - 1)? 2 * edge[i * N + j]: edge[i * N + j];
-                }
+        cur = 0;
+        for (int i = 0; i < 2 * N - 1; ++i) {
+            for (int j = i + 1; j < 2 * N; ++j) {
+                ll e = edge_label(i, j);
+                int degree_i = degree[i] < N ? degree[i] + 1: degree[i];
+                int degree_j = degree[j] < N ? degree[j] + 1: degree[j];
+                cur += ((degree_i + degree_j) >= 2 * N)? 2 * edge[e]: edge[e];
             }
-            // linked list
-            ListNode *node = new ListNode;
-            tail->val = cur;
-            tail->next = node;
-            tail = node;
-        } while (next_permutation(L, L + N));
-    } while (next_permutation(R, R + N));
+        }
+        // linked list
+        ListNode *node = new ListNode;
+        tail->val = cur;
+        tail->next = node;
+        tail = node;
+    } while (next_permutation(degree, degree + 2 * N));
 
     return head;
 }
