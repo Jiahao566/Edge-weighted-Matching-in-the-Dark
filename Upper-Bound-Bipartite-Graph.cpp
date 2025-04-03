@@ -1,15 +1,16 @@
 #include <map>
+#include <cstddef>
 #include <iostream>
-#include <iomanip>
-#include <vector>
-#include <functional>
+#include <string>
+#include <unordered_map>
 #include <algorithm>
-#include <cmath>
+#include <time.h>
+#include <math.h>
 #define ll unsigned long long
 
 using namespace std;
 
-const int N = 6;
+const int N = 5;
 // 0: unknown
 // 1: null edge
 // 2: real edge
